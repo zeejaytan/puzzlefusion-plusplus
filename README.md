@@ -66,11 +66,11 @@ If you want to run this code on your custom dataset, please refer to the [FAQ](d
 If you find PuzzleFusion++ useful in your research or applications, please consider citing:
 
 ```
-@article{wang2024puzzlefusionpp,
+@inproceedings{wang2024puzzlefusionpp,
   author    = {Wang, Zhengqing and Chen, Jiacheng and Furukawa, Yasutaka},
   title     = {PuzzleFusion++: Auto-agglomerative 3D Fracture Assembly by Denoise and Verify},
-  journal   = {arXiv preprint arXiv:2406.00259},
-  year      = {2024},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2025},
 }
 ```
 
