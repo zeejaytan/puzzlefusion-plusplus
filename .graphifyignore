@@ -1,0 +1,16 @@
+data/
+output/
+pytorch3d/
+renderer/threejs/
+renderer/pottery_output/
+renderer/test_output/
+chamferdist/build/
+logs/
+__pycache__/
+graphify-out/
+*.zip
+*.npz
+*.ckpt
+*.pt
+*.pth
+*.egg-info/
