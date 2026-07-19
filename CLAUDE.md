@@ -1,3 +1,7 @@
+# CLAUDE.md — PuzzleFusion++ (project)
+
+Follow the workspace root **`../AGENTS.md`** / **`../CLAUDE.md`** (laptop ↔ GitHub ↔ Spartan) for all shared rules. Same overlay as **`AGENTS.md`** in this folder (fork/upstream/`REMOTE_ROOT` table lives there). Edit and commit on the laptop; Spartan is pull-only (`git pull --ff-only`) and runs Slurm via `scripts/remote/*`. Heavy data (`data/`, `output/`, `logs`, checkpoints, `*.hdf5`) stays on Spartan; `artifacts/` is the local, gitignored rsync landing zone.
+
 ## graphify
 
 This project has a graphify knowledge graph at graphify-out/.
