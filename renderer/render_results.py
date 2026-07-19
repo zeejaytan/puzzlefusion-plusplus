@@ -17,7 +17,7 @@ def render_results(cfg, renderer: MyRenderer):
         
         parts = renderer.load_mesh_parts(file, gt_transformation, init_pose)
         
-        save_path = f"./BlenderToolBox_render/{save_dir}/{file}"
+        save_path = f"{save_dir}/{file}"
         os.makedirs(save_path, exist_ok=True)
 
         renderer.save_img(parts, gt_transformation, gt_transformation, init_pose, os.path.join(save_path, "gt.png"))
@@ -36,6 +36,9 @@ def render_results(cfg, renderer: MyRenderer):
             )
             frame += 1
 
+        if renderer.auto_frame:
+            bpy.context.scene.frame_set(max(frame, 1))
+            renderer.auto_frame_camera(parts)
 
         imgs_path = os.path.join(save_path, "imgs")
         os.makedirs(imgs_path, exist_ok=True)

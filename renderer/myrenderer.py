@@ -1,13 +1,12 @@
+import bpy  # must be first so mathutils submodule is available
+from mathutils import Quaternion, Vector, Matrix
+from blendertoolbox.lookAt import lookAt
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import os
 import glob
 import random
 import blendertoolbox as bt
-import bpy
-import os
-import pdb
-from mathutils import Quaternion, Vector, Matrix
 import subprocess
 
 
@@ -24,6 +23,7 @@ class MyRenderer:
         self.max_parts = cfg.renderer.max_parts
         self.use_GPU = True
         self.scale = (1, 1, 1)
+        self.auto_frame = bool(getattr(cfg.renderer, "auto_frame", False))
         self._init_param()
     
     
@@ -69,6 +69,40 @@ class MyRenderer:
     
     def assign_invisible_plane_location(self, location):
         self.invisible_plane_location = location
+
+    def auto_frame_camera(self, parts):
+        """Reposition camera and shadow plane to fit mesh objects in view.
+
+        Default camera targets the origin; archaeological scans (Metashape coords)
+        can sit far from the origin and render as blank frames without this.
+        """
+        if not parts:
+            return
+
+        min_co = Vector((1e9, 1e9, 1e9))
+        max_co = Vector((-1e9, -1e9, -1e9))
+        for obj in parts:
+            for corner in obj.bound_box:
+                world_corner = obj.matrix_world @ Vector(corner)
+                min_co.x = min(min_co.x, world_corner.x)
+                min_co.y = min(min_co.y, world_corner.y)
+                min_co.z = min(min_co.z, world_corner.z)
+                max_co.x = max(max_co.x, world_corner.x)
+                max_co.y = max(max_co.y, world_corner.y)
+                max_co.z = max(max_co.z, world_corner.z)
+
+        center = (min_co + max_co) / 2
+        extent = float(max(max_co - min_co))
+        distance = max(extent * 2.5, 2.0)
+
+        cam_loc = center + Vector((distance * 0.9, -distance * 0.7, distance * 0.55))
+        self.cam.location = cam_loc
+        lookAt(self.cam, center)
+
+        # Move shadow catcher under the assembly
+        for obj in bpy.data.objects:
+            if obj.type == "MESH" and obj.name.startswith("Plane"):
+                obj.location = Vector((center.x, center.y, min_co.z - 0.05 * extent))
 
     def sample_data_files(self):
         """
@@ -286,7 +320,8 @@ class MyRenderer:
 
     def save_img(self, parts, gt_transformatoin, transformation, init_pose, save_path):
         self.render_parts(parts, gt_transformatoin, transformation, init_pose)
-        # bt.renderImage(f"./render_results/{self.output_path}/{file}.png", self.cam)
+        if self.auto_frame:
+            self.auto_frame_camera(parts)
         bt.renderImage(f"{save_path}", self.cam)
         
 
