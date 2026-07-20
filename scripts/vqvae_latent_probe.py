@@ -79,31 +79,45 @@ def main():
     with torch.no_grad():
         ta = torch.from_numpy(na).to(dev)
         tb = torch.from_numpy(nb).to(dev)
-        za = model.encoder(ta.permute(0, 2, 1))[0]  # z_e (P,25,64)
-        zb = model.encoder(tb.permute(0, 2, 1))[0]
-        ia, ib = token_indices(model, za), token_indices(model, zb)
-        # quantized latents for cosine comparison
+        za, xa = model.encoder(ta.permute(0, 2, 1))  # z_e (P,25,64), xyz (P,25,3)
+        zb, xb = model.encoder(tb.permute(0, 2, 1))
+        ia = token_indices(model, za).reshape(za.shape[0], 25, -1)
+        ib = token_indices(model, zb).reshape(zb.shape[0], 25, -1)
         _, qa, _, _, _ = model.vector_quantization(za.reshape(za.shape[0], -1, 16))
         _, qb, _, _, _ = model.vector_quantization(zb.reshape(zb.shape[0], -1, 16))
-        qa = qa.reshape(qa.shape[0], -1)
-        qb = qb.reshape(qb.shape[0], -1)
+        qa = qa.reshape(qa.shape[0], 25, -1).cpu()  # (P,25,64)
+        qb = qb.reshape(qb.shape[0], 25, -1).cpu()
+        xa, xb = xa.cpu().numpy(), xb.cpu().numpy()
+        ia, ib = ia.cpu(), ib.cpu()
 
+    # FPS center sets differ between encodings of resampled clouds, so the
+    # 25 latents have no index correspondence — match by nearest center.
+    from scipy.spatial import cKDTree
     P = qa.shape[0]
     cos = torch.nn.functional.cosine_similarity
+
+    def matched_stats(q1, i1, x1, q2, i2, x2):
+        """Match centers of set1 -> nearest center of set2; compare latents."""
+        idx = cKDTree(x2).query(x1)[1]
+        cdist = float(np.linalg.norm(x2[idx] - x1, axis=1).mean())
+        c = float(cos(q1.reshape(-1), q2[idx].reshape(-1), dim=0))
+        tok = float((i1 == i2[idx]).float().mean())
+        return c, tok, cdist
+
     rows = []
     for i in range(P):
-        rows.append({
-            "part": i,
-            "cosine_same_part": float(cos(qa[i], qb[i], dim=0)),
-            "token_overlap": float((ia[i] == ib[i]).float().mean()),
-        })
-    # cross-part null within set A
+        c, tok, cd = matched_stats(qa[i], ia[i], xa[i], qb[i], ib[i], xb[i])
+        rows.append({"part": i, "cosine_same_part": c, "token_overlap": tok,
+                     "center_match_dist": cd})
+    # cross-part null within set A (matched the same way)
     null_cos, null_tok = [], []
     for i in range(P):
         for j in range(P):
             if i != j:
-                null_cos.append(float(cos(qa[i], qa[j], dim=0)))
-                null_tok.append(float((ia[i] == ia[j]).float().mean()))
+                c, tok, _ = matched_stats(qa[i], ia[i], xa[i],
+                                          qa[j], ia[j], xa[j])
+                null_cos.append(c)
+                null_tok.append(tok)
 
     summary = {
         "same_part_cosine": {"mean": float(np.mean([r["cosine_same_part"] for r in rows])),
