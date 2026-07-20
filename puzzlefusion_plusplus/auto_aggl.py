@@ -90,10 +90,48 @@ class AutoAgglomerative(pl.LightningModule):
 
         latent[part_valids.bool()] = encoder_out["z_q"]
         xyz[part_valids.bool()] = encoder_out["xyz"]
+
+        # T4 prior-dominance ablation (PFPP_JUGLET_SUCCESS_EXPERIMENT_PLAN.md):
+        # corrupt the shape conditioning while keeping scale + anchor intact.
+        mode = self.cfg.get("ablation_mode", "none")
+        if mode != "none":
+            latent, xyz = self._ablate_features(mode, latent, xyz, part_valids)
+        return latent, xyz
+
+    def _ablate_features(self, mode, latent, xyz, part_valids):
+        mask = part_valids.bool()
+        if mode == "shuffle":
+            # permute (z_q, xyz) jointly between valid parts: each pose slot is
+            # "described" as a different sherd. Permutation fixed per sample so
+            # all 20 denoise steps see the same corrupted identity assignment.
+            n = int(mask.sum())
+            if getattr(self, "_ablation_perm", None) is None or len(self._ablation_perm) != n:
+                perm = torch.randperm(n)
+                while n > 1 and bool((perm == torch.arange(n)).all()):
+                    perm = torch.randperm(n)
+                self._ablation_perm = perm
+            lv, xv = latent[mask], xyz[mask]
+            latent[mask] = lv[self._ablation_perm]
+            xyz[mask] = xv[self._ablation_perm]
+        elif mode == "random":
+            # random codebook entries in place of the true tokens; keep xyz
+            # support so only the *content* is garbled, not the token layout
+            codebook = self.encoder.vector_quantization.embedding.weight  # (K, e_dim)
+            lv = latent[mask]  # (n, 25, 64)
+            n, L, C = lv.shape
+            e_dim = codebook.shape[1]
+            idx = torch.randint(0, codebook.shape[0], (n * L * (C // e_dim),),
+                                device=codebook.device)
+            latent[mask] = codebook[idx].reshape(n, L, C).to(latent.dtype)
+        elif mode == "zero":
+            latent[mask] = 0.0
+        else:
+            raise ValueError(f"unknown ablation_mode: {mode}")
         return latent, xyz
 
     
     def test_denoiser_only(self, data_dict):
+        self._ablation_perm = None  # fresh identity permutation per sample
         gt_trans = data_dict['part_trans']
         gt_rots = data_dict['part_rots']
         gt_trans_and_rots = torch.cat([gt_trans, gt_rots], dim=-1)
