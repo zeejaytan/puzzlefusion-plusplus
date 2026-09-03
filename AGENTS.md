@@ -43,8 +43,12 @@ parts an agent needs before it can act.
 - **Triage labels.** `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`,
   `wontfix`, recorded as a `Status:` line near the top of the ticket. Details:
   `../docs/agents/triage-labels.md`.
-- **Domain docs — single-context.** This file is the domain reference for this project;
-  ADRs, if any, go under `docs/adr/`. Details: `../docs/agents/domain.md`.
+- **Domain docs — single-context.** Three different things, kept apart: **this file** is
+  how to work here and the traps; **`CONTEXT.md`** at the repo root is the glossary, and
+  `/domain-modeling` creates it lazily when the first term is actually resolved — do not
+  create it empty; **`../docs/glossary.md`** is the cross-project measurement vocabulary
+  (`part_acc`, chamfer distance, best-of-N) and outranks any local redefinition. ADRs go
+  under `docs/adr/`. Details: `../docs/agents/domain.md`.
 - **Intent.** [`intent/`](intent/) holds what we are trying to establish and what would
   settle it -- prefix **`P`**, permanent, numbers never reused. `/to-intent` opens a
   question or writes a finished ticket's result back into one. Check the loop is wired
