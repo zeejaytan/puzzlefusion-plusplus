@@ -26,7 +26,7 @@ git push origin HEAD
 
 ## Domain / debugging
 
-See `CLAUDE.md` for the full codebase reference (VQVAE / SE3 denoiser / verifier modules, configs, data layout). Prefer probes over guesses; do not invent config keys. Session notes live in `.progress/`.
+See `docs/codebase-reference.md` for the full codebase reference (VQVAE / SE3 denoiser / verifier modules, configs, data layout). Prefer probes over guesses; do not invent config keys. Session notes live in `.progress/`.
 
 ## Agent skills
 
