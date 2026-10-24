@@ -24,6 +24,8 @@ git push origin HEAD
 ./scripts/remote/fetch_artifacts.sh logs/some_run ./artifacts/
 ```
 
+Workbench layout, and the harvest-then-delete procedure that goes with it: `C:\PR\docs\agents\workspace-hygiene.md`. Deletion follows `C:\PR\AGENTS.md` rule 13. Canonical checkout `/data/gpfs/projects/punim2657/Puzzlefusion`; its `runs/` + `attic/` are not yet set up.
+
 ## Domain / debugging
 
 See `docs/codebase-reference.md` for the full codebase reference (VQVAE / SE3 denoiser / verifier modules, configs, data layout). Prefer probes over guesses; do not invent config keys. Session notes live in `.progress/`.
