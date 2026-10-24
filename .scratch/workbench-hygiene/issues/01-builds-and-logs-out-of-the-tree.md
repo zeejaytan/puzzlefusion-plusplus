@@ -6,12 +6,11 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** in-progress — scripts changed; move on Spartan next
-**Working in:** project thread "Puzzlefusion builds out of tree" (2026-10-24)
+**Status:** resolved — both trees in PFpp/build, env proved on a GPU node (job 33745440)
 
 Amendments 2.6 and 2.3. Rebuilding `pytorch3d` is slow: move it (and point the environment at the new path) rather than rebuild, and prove the environment still imports it on a compute node.
 
-- [ ] `pytorch3d/` and `chamferdist/` no longer inside the checkout; imports still work
+- [x] `pytorch3d/` and `chamferdist/` no longer inside the checkout; imports still work
 - [x] No batch script writes logs or renders into the checkout
 
 ## Progress
@@ -31,6 +30,14 @@ checkout, as `SfSpp/` is for SfS++), holding `build/`, `logs/`, `out/`, `runs/`,
 - `scripts/move_builds_out.sh` (dry run unless `--apply`) moves both trees and repoints the
   environment, backing up each edited file to `PFpp/attic/env-backup-<stamp>/`;
   `scripts/check_env_imports.slurm` runs a CUDA op from each on a compute node.
+- Move (conservator's OK on the decision card, 2026-10-24 08:50Z): `move_builds_out.sh` dry run
+  clean, then applied at 90553f1; both trees now in `PFpp/build/`, `pytorch3d.egg-link` and
+  `easy-install.pth` repointed (originals in `PFpp/attic/env-backup-*`, record in
+  `PFpp/attic/move-builds-*.txt`); imports from the new place on the login node.
+- Compute-node proof: job 33745440, COMPLETED 0:0, 1 min 19 s on an A100 (gpgpu127). torch
+  2.0.1+cu118 with CUDA; pytorch3d 0.7.9 loaded from `PFpp/build/pytorch3d`, chamferdist from
+  the env egg; `knn_points` and Chamfer both ran on the GPU; log ends "ALL IMPORTS OK"
+  (`PFpp/logs/env_imports_33745440.out`).
 
 **Not in this ticket, still inside the checkout:** `output/` (trained models and inference
 results, written by Hydra relative to the working directory), `data/` (the npz builders write
