@@ -14,6 +14,10 @@ set -euo pipefail
 
 DATA_ID="${1:-97}"
 
+# Renders go to the working area, never the checkout.
+OUT=${OUT:-/data/gpfs/projects/punim2657/PFpp/out/sample_${DATA_ID}_$(date +%Y%m%d_%H%M%S)}
+mkdir -p "$OUT"
+
 echo "Rendering sample data_id=${DATA_ID}"
 
 export PYTHONUNBUFFERED=1
@@ -21,6 +25,6 @@ export PYTHONUNBUFFERED=1
 python -m renderer.render_results \
   experiment_name=everyday_epoch2000_bs64 \
   inference_dir=test_run \
-  renderer.output_path="sample_${DATA_ID}" \
+  renderer.output_path="$OUT" \
   +renderer.single_data_id="${DATA_ID}"
 

@@ -6,8 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=04:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/logs/render_pottery_%j.out
-#SBATCH --error=/data/gpfs/projects/punim2657/Puzzlefusion/logs/render_pottery_%j.err
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/render_pottery_%j.out
 
 module load Anaconda3/2024.02-1
 eval "$(conda shell.bash hook)"
@@ -15,6 +14,13 @@ conda activate blender-render
 
 cd /data/gpfs/projects/punim2657/Puzzlefusion
 export PYTHONPATH=$(pwd)
+
+# Logs and renders go to the working area, never the checkout: the run directory when
+# launched through new_run.sh, otherwise one directory per job under $WORK/out/.
+WORK=/data/gpfs/projects/punim2657/PFpp
+OUT=${RUN_DIR:+$RUN_DIR/out}
+OUT=${OUT:-$WORK/out/render_pottery_${SLURM_JOB_ID:-$(date +%Y%m%d_%H%M%S)}}
+mkdir -p "$OUT"
 
 python -m renderer.render_results \
     experiment_name=everyday_epoch2000_bs64 \
@@ -24,4 +30,4 @@ python -m renderer.render_results \
     renderer.blender.numSamples=64 \
     renderer.blender.imgRes_x=1024 \
     renderer.blender.imgRes_y=1024 \
-    renderer.output_path=renderer/pottery_output
+    renderer.output_path="$OUT/pottery_output"

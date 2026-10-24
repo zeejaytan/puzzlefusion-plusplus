@@ -6,11 +6,13 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --time=01:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/fix_torch_%j.log
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/fix_torch_%j.out
 
 set -euo pipefail
 
 PROJDIR=/data/gpfs/projects/punim2657/Puzzlefusion
+# Compiled dependencies are built in the working area, never in the checkout.
+BUILD=/data/gpfs/projects/punim2657/PFpp/build
 
 echo "=== Fix started at $(date) on $(hostname) ==="
 nvidia-smi --query-gpu=name --format=csv,noheader
@@ -36,12 +38,12 @@ pip install --force-reinstall torch-cluster -f https://data.pyg.org/whl/torch-2.
 
 echo ""
 echo "=== Rebuilding pytorch3d against correct torch ==="
-cd "$PROJDIR/pytorch3d"
+cd "$BUILD/pytorch3d"
 pip install -e . --no-build-isolation
 
 echo ""
 echo "=== Rebuilding chamferdist against correct torch ==="
-cd "$PROJDIR/chamferdist"
+cd "$BUILD/chamferdist"
 python setup.py install
 
 echo ""

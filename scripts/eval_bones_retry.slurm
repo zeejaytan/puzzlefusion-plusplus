@@ -7,8 +7,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:1
 #SBATCH --time=00:30:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_bones_retry_%j.out
-#SBATCH --error=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_bones_retry_%j.err
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/eval_bones_retry_%j.out
 
 module load Anaconda3/2024.02-1
 eval "$(conda shell.bash hook)"

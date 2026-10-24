@@ -7,8 +7,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:1
 #SBATCH --time=01:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_t4_ablations_%j.out
-#SBATCH --error=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_t4_ablations_%j.err
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/eval_t4_ablations_%j.out
 
 # T4 — prior-dominance ablation (PFPP_JUGLET_SUCCESS_EXPERIMENT_PLAN.md).
 # Corrupt PF++'s shape conditioning on the Juglet deploy sample while keeping
@@ -23,7 +22,6 @@ eval "$(conda shell.bash hook)"
 conda activate puzzlefusionpp
 
 cd /data/gpfs/projects/punim2657/Puzzlefusion
-mkdir -p logs
 export PYTHONPATH=$(pwd)
 
 DENOISER_CKPT=output/denoiser/everyday_epoch2000_bs64/training/last.ckpt

@@ -13,7 +13,9 @@ Follow the workspace root **`../AGENTS.md`** (laptop ↔ GitHub ↔ Spartan) for
 | Remote helpers | `scripts/remote/pull_and_sbatch.sh`, `job_status.sh`, `fetch_artifacts.sh` |
 | Breaking Bad meshes (HPC only) | `/data/gpfs/projects/punim2657/Breaking-Bad-Dataset.github.io/data/breaking_bad/` |
 
-Heavy data on Spartan only (gitignored): `data/`, `output/`, `logs`, `checkpoints.zip`, `*.hdf5` / `*.h5`, `pytorch3d/`, `chamferdist/`, render outputs. Local rsync landing zone: `artifacts/`.
+Heavy data on Spartan only (gitignored): `data/`, `output/`, `checkpoints.zip`, `*.hdf5` / `*.h5`. Local rsync landing zone: `artifacts/`.
+
+**Working area** `/data/gpfs/projects/punim2657/PFpp/` (outside the checkout): `build/` holds the compiled `pytorch3d` (editable install) and `chamferdist` source, `logs/` the Slurm output of jobs sbatch'd directly, `out/` their renders and probe outputs, plus `runs/` and `attic/`. Batch scripts write nothing into the checkout; jobs launched through `new_run.sh` write to their run directory instead. `data/` and `output/` (trained models, inference results) still live in the checkout. Prove the environment after any change with `scripts/check_env_imports.slurm`.
 
 Typical loop:
 
@@ -24,7 +26,7 @@ git push origin HEAD
 ./scripts/remote/fetch_artifacts.sh logs/some_run ./artifacts/
 ```
 
-Workbench layout, and the harvest-then-delete procedure that goes with it: `../docs/agents/workspace-hygiene.md`. Deletion follows `../AGENTS.md` rule 13. Canonical checkout `/data/gpfs/projects/punim2657/Puzzlefusion`; its `runs/` + `attic/` are not yet set up.
+Workbench layout, and the harvest-then-delete procedure that goes with it: `../docs/agents/workspace-hygiene.md`. Deletion follows `../AGENTS.md` rule 13. Canonical checkout `/data/gpfs/projects/punim2657/Puzzlefusion`; working area `/data/gpfs/projects/punim2657/PFpp/`.
 
 ## Domain / debugging
 

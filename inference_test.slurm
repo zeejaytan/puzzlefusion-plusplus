@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --time=01:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/inference_test_%j.log
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/inference_test_%j.out
 
 set -euo pipefail
 

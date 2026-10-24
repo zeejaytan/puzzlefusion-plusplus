@@ -19,6 +19,9 @@ DATA_ID="${1:-97}"
 PROJDIR="/data/gpfs/projects/punim2657/Puzzlefusion"
 
 cd "$PROJDIR"
+# Renders go to the working area, never the checkout.
+OUT=${OUT:-/data/gpfs/projects/punim2657/PFpp/out/mesh_gif_$(date +%Y%m%d_%H%M%S)}
+mkdir -p "$OUT"
 
 echo "=== Rendering mesh animation with Blender ==="
 echo "Project: $PROJDIR"
@@ -32,12 +35,12 @@ conda activate puzzlefusionpp
 python -m renderer.render_results \
   experiment_name=everyday_epoch2000_bs64 \
   inference_dir=test_run \
-  renderer.output_path="gif_run" \
+  renderer.output_path="$OUT/gif_run" \
   renderer.num_samples=1
 
-LATEST_DIR=$(ls -td "$PROJDIR"/BlenderToolBox_render/gif_run/* 2>/dev/null | head -n 1 || true)
+LATEST_DIR=$(ls -td "$OUT"/gif_run/* 2>/dev/null | head -n 1 || true)
 if [[ -z "$LATEST_DIR" ]]; then
-  echo "ERROR: Could not find BlenderToolBox_render/gif_run/* directory."
+  echo "ERROR: Could not find $OUT/gif_run/* directory."
   exit 1
 fi
 
@@ -48,7 +51,7 @@ if [[ ! -f "$VIDEO" ]]; then
 fi
 
 echo "=== Converting video to GIF ==="
-OUT_GIF="$PROJDIR/mesh_assembly_${DATA_ID}.gif"
+OUT_GIF="$OUT/mesh_assembly_${DATA_ID}.gif"
 
 ffmpeg -y -i "$VIDEO" -vf "fps=20,scale=640:-1:flags=lanczos" "$OUT_GIF"
 

@@ -7,8 +7,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:1
 #SBATCH --time=03:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_t1_t3_%j.out
-#SBATCH --error=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_t1_t3_%j.err
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/eval_t1_t3_%j.out
 
 # T1a (sherd-identity scrambles), T1b (seed consistency), T3 (pairwise oracle)
 # — PFPP_JUGLET_SUCCESS_EXPERIMENT_PLAN.md. All denoiser-only.
@@ -18,7 +17,6 @@ eval "$(conda shell.bash hook)"
 conda activate puzzlefusionpp
 
 cd /data/gpfs/projects/punim2657/Puzzlefusion
-mkdir -p logs
 export PYTHONPATH=$(pwd)
 
 DENOISER_CKPT=output/denoiser/everyday_epoch2000_bs64/training/last.ckpt

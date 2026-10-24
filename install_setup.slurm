@@ -6,11 +6,13 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --time=04:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/install_setup_%j.log
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/install_setup_%j.out
 
 set -euo pipefail
 
 PROJDIR=/data/gpfs/projects/punim2657/Puzzlefusion
+# Compiled dependencies are built in the working area, never in the checkout.
+BUILD=/data/gpfs/projects/punim2657/PFpp/build
 
 echo "=== Job started at $(date) on $(hostname) ==="
 nvidia-smi
@@ -28,7 +30,8 @@ pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https
 
 echo ""
 echo "=== Step 3a: Building pytorch3d from source ==="
-cd "$PROJDIR"
+mkdir -p "$BUILD"
+cd "$BUILD"
 if [ ! -d pytorch3d ]; then
     git clone https://github.com/facebookresearch/pytorch3d.git
 fi
@@ -41,7 +44,7 @@ pip install torch-cluster -f https://data.pyg.org/whl/torch-2.0.1+cu118.html
 
 echo ""
 echo "=== Step 3c: Building chamferdist from source ==="
-cd "$PROJDIR"
+cd "$BUILD"
 if [ ! -d chamferdist ]; then
     git clone https://github.com/krrish94/chamferdist.git
 fi

@@ -7,8 +7,7 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:1
 #SBATCH --time=02:00:00
-#SBATCH --output=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_t2t3_fix_%j.out
-#SBATCH --error=/data/gpfs/projects/punim2657/Puzzlefusion/logs/eval_t2t3_fix_%j.err
+#SBATCH --output=/data/gpfs/projects/punim2657/PFpp/logs/eval_t2t3_fix_%j.out
 
 # Fix pass for T2 and T3-control (PFPP_JUGLET_SUCCESS plan):
 #  - T2 rerun on SAME-BUILD geometry: the original t2 compared the May npz
@@ -24,8 +23,14 @@ G=/data/gpfs/projects/punim2657/GARF
 PF=/data/gpfs/projects/punim2657/Puzzlefusion
 INF=$PF/output/denoiser/everyday_epoch2000_bs64/inference
 cd $PF
-mkdir -p logs
 export PYTHONPATH=$PF
+
+# Logs and renders go to the working area, never the checkout: the run directory when
+# launched through new_run.sh, otherwise one directory per job under $WORK/out/.
+WORK=/data/gpfs/projects/punim2657/PFpp
+OUT=${RUN_DIR:+$RUN_DIR/out}
+OUT=${OUT:-$WORK/out/eval_t2t3_fix_${SLURM_JOB_ID:-$(date +%Y%m%d_%H%M%S)}}
+mkdir -p "$OUT"
 
 echo "### conversions + builders (GARF venv)"
 $G/.venv/bin/python convert_hdf5_to_npz.py --hdf5 $G/input/juglet_deploy.hdf5 \
@@ -69,45 +74,45 @@ python scripts/vqvae_latent_probe.py \
     --npz-a data/pc_data/juglet_fresh_a/val/00000.npz \
     --npz-b data/pc_data/juglet_fresh_b/val/00000.npz \
     --ckpt output/denoiser/everyday_epoch2000_bs64/training/last.ckpt \
-    --out logs/t2b_probe_resample_null
+    --out "$OUT/t2b_probe_resample_null"
 python scripts/vqvae_latent_probe.py \
     --npz-a data/pc_data/juglet_fresh_a/val/00000.npz \
     --npz-b data/pc_data/juglet_dewear/val/00000.npz \
     --ckpt output/denoiser/everyday_epoch2000_bs64/training/last.ckpt \
-    --out logs/t2b_probe_wear
+    --out "$OUT/t2b_probe_wear"
 
 echo "### scoring (GARF venv)"
 cd $G
 TS=$(date +%Y%m%d_%H%M%S)
-OUT=logs/diagnostics/pfpp_t2fix_${TS}
-mkdir -p $OUT
+D=$OUT/pfpp_t2fix_${TS}
+mkdir -p "$D"
 
 $G/.venv/bin/python scripts/pfpp_pose_delta.py \
     --run-a "$INF/t2_fresh_a/0" --npz-a "$PF/data/pc_data/juglet_fresh_a/val/00000.npz" \
     --run-b "$INF/t2_fresh_b/0" --npz-b "$PF/data/pc_data/juglet_fresh_b/val/00000.npz" \
-    --out $OUT/pose_delta_resample_null
+    --out "$D/pose_delta_resample_null"
 $G/.venv/bin/python scripts/pfpp_pose_delta.py \
     --run-a "$INF/t2_fresh_a/0" --npz-a "$PF/data/pc_data/juglet_fresh_a/val/00000.npz" \
     --run-b "$INF/t2_dewear/0" --npz-b "$PF/data/pc_data/juglet_dewear/val/00000.npz" \
-    --out $OUT/pose_delta_wear
+    --out "$D/pose_delta_wear"
 $G/.venv/bin/python scripts/pfpp_layout_probes.py \
     --pfpp-dir "$INF/t2_fresh_a/0" \
     --pc-npz "$PF/data/pc_data/juglet_fresh_a/val/00000.npz" \
     --mesh-hdf5 $G/input/juglet_deploy.hdf5 --mesh-key artifact/Juglet-000 \
-    --out $OUT --tag t2_fresh_a --n-null 0
+    --out "$D" --tag t2_fresh_a --n-null 0
 
 echo "### T3 control scoring"
 $G/.venv/bin/python scripts/pfpp_pair_chamfer.py control \
     --pairs-data "$PF/data/pc_data/t3_control_pairs" \
     --inference-dirs $INF/t3_control_s41 $INF/t3_control_s42 $INF/t3_control_s43 \
-    --out logs/diagnostics/pfpp_t3_control_${TS}
+    --out "$OUT/pfpp_t3_control_${TS}"
 
 echo "### T1c seam continuity (original deploy layout)"
 $G/.venv/bin/python scripts/pfpp_seam_continuity.py \
     --pfpp-dir "$INF/juglet_deploy/0" \
     --pc-npz "$PF/data/pc_data/juglet_deploy/val/00000.npz" \
-    --out logs/diagnostics/pfpp_t1c_${TS}
+    --out "$OUT/pfpp_t1c_${TS}"
 
-cp $PF/logs/t2b_probe_resample_null/latent_probe.json $OUT/latent_probe_resample_null.json || true
-cp $PF/logs/t2b_probe_wear/latent_probe.json $OUT/latent_probe_wear.json || true
-echo "=== DONE: $OUT ==="
+cp "$OUT/t2b_probe_resample_null/latent_probe.json" "$D/latent_probe_resample_null.json" || true
+cp "$OUT/t2b_probe_wear/latent_probe.json" "$D/latent_probe_wear.json" || true
+echo "=== DONE: $D ==="
