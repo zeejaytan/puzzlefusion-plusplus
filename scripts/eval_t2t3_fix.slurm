@@ -87,28 +87,28 @@ TS=$(date +%Y%m%d_%H%M%S)
 D=$OUT/pfpp_t2fix_${TS}
 mkdir -p "$D"
 
-$G/.venv/bin/python scripts/pfpp_pose_delta.py \
+$G/.venv/bin/python $G/repo/scripts/pfpp_pose_delta.py \
     --run-a "$INF/t2_fresh_a/0" --npz-a "$PF/data/pc_data/juglet_fresh_a/val/00000.npz" \
     --run-b "$INF/t2_fresh_b/0" --npz-b "$PF/data/pc_data/juglet_fresh_b/val/00000.npz" \
     --out "$D/pose_delta_resample_null"
-$G/.venv/bin/python scripts/pfpp_pose_delta.py \
+$G/.venv/bin/python $G/repo/scripts/pfpp_pose_delta.py \
     --run-a "$INF/t2_fresh_a/0" --npz-a "$PF/data/pc_data/juglet_fresh_a/val/00000.npz" \
     --run-b "$INF/t2_dewear/0" --npz-b "$PF/data/pc_data/juglet_dewear/val/00000.npz" \
     --out "$D/pose_delta_wear"
-$G/.venv/bin/python scripts/pfpp_layout_probes.py \
+$G/.venv/bin/python $G/repo/scripts/pfpp_layout_probes.py \
     --pfpp-dir "$INF/t2_fresh_a/0" \
     --pc-npz "$PF/data/pc_data/juglet_fresh_a/val/00000.npz" \
     --mesh-hdf5 $G/input/juglet_deploy.hdf5 --mesh-key artifact/Juglet-000 \
     --out "$D" --tag t2_fresh_a --n-null 0
 
 echo "### T3 control scoring"
-$G/.venv/bin/python scripts/pfpp_pair_chamfer.py control \
+$G/.venv/bin/python $G/repo/scripts/pfpp_pair_chamfer.py control \
     --pairs-data "$PF/data/pc_data/t3_control_pairs" \
     --inference-dirs $INF/t3_control_s41 $INF/t3_control_s42 $INF/t3_control_s43 \
     --out "$OUT/pfpp_t3_control_${TS}"
 
 echo "### T1c seam continuity (original deploy layout)"
-$G/.venv/bin/python scripts/pfpp_seam_continuity.py \
+$G/.venv/bin/python $G/repo/scripts/pfpp_seam_continuity.py \
     --pfpp-dir "$INF/juglet_deploy/0" \
     --pc-npz "$PF/data/pc_data/juglet_deploy/val/00000.npz" \
     --out "$OUT/pfpp_t1c_${TS}"

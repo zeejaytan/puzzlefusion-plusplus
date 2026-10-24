@@ -58,11 +58,11 @@ python scripts/vqvae_latent_probe.py \
 echo "### T2a scoring (GARF venv)"
 cd $G
 TS=$(date +%Y%m%d_%H%M%S)
-$G/.venv/bin/python scripts/pfpp_pose_delta.py \
+$G/.venv/bin/python $G/repo/scripts/pfpp_pose_delta.py \
     --run-a "$INF/t4_none/0" --npz-a "$PF/data/pc_data/juglet_deploy/val/00000.npz" \
     --run-b "$INF/t2_dewear/0" --npz-b "$PF/data/pc_data/juglet_dewear/val/00000.npz" \
     --out "$OUT/pfpp_t2a_${TS}"
-$G/.venv/bin/python scripts/pfpp_layout_probes.py \
+$G/.venv/bin/python $G/repo/scripts/pfpp_layout_probes.py \
     --pfpp-dir "$INF/t2_dewear/0" \
     --pc-npz   "$PF/data/pc_data/juglet_dewear/val/00000.npz" \
     --mesh-hdf5 $G/input/juglet_deploy_dewear.hdf5 --mesh-key artifact/Juglet-000 \
